@@ -3,24 +3,26 @@ from skimage import color as clr
 import math
 
 # Concept names; indices align with data_clean.csv
-allConcepts = ['mango','watermelon','honeydew','cantaloupe','grapefruit','strawberry','raspberry','blueberry','avocado','orange','lime','lemon']
+allConcepts = ['mango','watermelon','honeydew','cantaloupe','grapefruit','strawberry','raspberry','blueberry',
+               'avocado','orange','lime','lemon']
 
+
+# Get the color ratings data from file data_clean.csv ([12x58], i.e. [concepts x colors])
 # https://stackoverflow.com/questions/37173892/convert-from-csv-to-array-in-python
-# Get the color ratings data from file data_clean.csv
-# 12x58, i.e. concepts x colors
 data = []
 with open("data_clean.csv") as csvfile:
     reader = csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC) # change contents to floats
     for row in reader: # each row is a list
         data.append(row)
 
-# Get the LAB coordinates of colors from file Lab.csv
-# 58x3, i.e. colors x LAB coordinates
+
+# Get the LAB coordinates of colors from file Lab.csv ([58x3], i.e. [colors x LAB coordinates])
 colorData = []
 with open("Lab.csv") as csvfile:
     reader = csv.reader(csvfile, quoting=csv.QUOTE_NONNUMERIC) # change contents to floats
     for row in reader: # each row is a list
         colorData.append(row)
+
 
 #TODO: make superclass for Color so that computeDeltaE is less hacky
 
@@ -58,6 +60,7 @@ def diff(first, second):
     """Given two lists, find first - second"""
     second = set(second)
     return [item for item in first if item not in second]
+
 
 def computeDeltaE(color1, color2):
     color1, color2 = color1.value, color2.value

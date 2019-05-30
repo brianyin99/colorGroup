@@ -50,3 +50,6 @@ def processData(myFolder, assocTol=0.07, numHouses=4, colorsPerHouse=5, assocRan
         plt.imshow(dispArray)
         plt.title(helpers.allConcepts[myConcept])
         plt.savefig(myFolder + '/' + helpers.allConcepts[myConcept] + '.svg', format='svg')
+
+
+processData('results/assocTol = 0.07 sum')
