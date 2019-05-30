@@ -1,6 +1,7 @@
 import csv
 from skimage import color as clr
 import math
+from abc import ABC
 
 # Concept names; indices align with data_clean.csv
 allConcepts = ['mango','watermelon','honeydew','cantaloupe','grapefruit','strawberry','raspberry','blueberry',
@@ -23,37 +24,44 @@ with open("Lab.csv") as csvfile:
     for row in reader: # each row is a list
         colorData.append(row)
 
-
-#TODO: make superclass for Color so that computeDeltaE is less hacky
-
-class ColorHouse:
-    def __init__(self, colorInstance, colorsPerHouse):
-        self.index = colorInstance.index
-        self.assoc = colorInstance.assoc
-        self.value = colorInstance.value
-        self.myColors = [colorInstance]
-        self.capacity = colorsPerHouse
-    @property
-    def numColors(self):
-        return len(self.myColors)
-    @property
-    def isFull(self):
-        return self.numColors == self.capacity
-    def addColor(self, myColor):
-        self.myColors.append(myColor)
-        myColor.isGrouped = True
-
-
-class Color:
+class ColorAbstract(ABC):
     def __init__(self, index, assoc):
         self.index = index
         self.assoc = assoc
-        self.value = colorData[index]
+
+    @property
+    def value(self):
+        return colorData[self.index]
+
+
+class ColorReal(ColorAbstract):
+    def __init__(self, index, assoc):
+        super().__init__(index, assoc)
         self.isGrouped = False
         self.houseDist = {}
+
     def findDistances(self, colorHouses):
         for colorHouse in colorHouses:
             self.houseDist[colorHouse] = computeDeltaE(colorHouse, self)
+
+
+class ColorHouse(ColorAbstract): # self is not in myColors
+    def __init__(self, index, assoc, colorsPerHouse):
+        super().__init__(index, assoc)
+        self.myColors = []
+        self.capacity = colorsPerHouse
+
+    @property
+    def numColors(self):
+        return len(self.myColors)
+
+    @property
+    def isFull(self):
+        return self.numColors == self.capacity
+
+    def addColor(self, myColor):
+        self.myColors.append(myColor)
+        myColor.isGrouped = True
 
 
 def diff(first, second):
@@ -69,11 +77,11 @@ def computeDeltaE(color1, color2):
 
 def groupColors(myConcept, houseColors, conceptData, assocRange, colorsPerHouse):
     """For each color house (colors strongly associated with the
-    given concept), find COLORSPERHOUSE-1 colors that are weakly
+    given concept), find COLORSPERHOUSE colors that are weakly
     associated with MYCONCEPT"""
 
     # create color houses for colors with strong associations to myConcept
-    myHouses = [ColorHouse(Color(houseColor[0], houseColor[1]), colorsPerHouse) for houseColor in houseColors]
+    myHouses = [ColorHouse(houseColor[0], houseColor[1], colorsPerHouse) for houseColor in houseColors]
     numHouses = len(myHouses)
 
     # Color instances to be put into houses
@@ -82,8 +90,8 @@ def groupColors(myConcept, houseColors, conceptData, assocRange, colorsPerHouse)
     # use assocRange to find subset of items to be grouped, do not add house colors
     for color in conceptData:
         if color not in houseColors and assocRange[0] <= color[1] and color[1] <= assocRange[1]:
-            colorsToGroup.append(Color(color[0], color[1]))
-    assert len(colorsToGroup) >= numHouses * (colorsPerHouse - 1), "Not enough colors to group"
+            colorsToGroup.append(ColorReal(color[0], color[1]))
+    assert len(colorsToGroup) >= numHouses * (colorsPerHouse), "Not enough colors to group"
 
     # for each color to be grouped, compute dist to each house
     for color in colorsToGroup:

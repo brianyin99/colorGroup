@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from skimage import color as clr
 
-def processData(myFolder, assocTol=0.07, numHouses=4, colorsPerHouse=5, assocRange=(0, 0.2)):
+def processData(myFolder, assocTol=0.07, numHouses=4, colorsPerHouse=4, assocRange=(0, 0.2)):
     for i in range(12):
         myConcept = i
 
@@ -42,7 +42,7 @@ def processData(myFolder, assocTol=0.07, numHouses=4, colorsPerHouse=5, assocRan
         #display colors
         dispArray = []
         for group in myGroups:
-            groupVec = []
+            groupVec = [clr.lab2rgb([[group.value]])[0][0]]
             for color in group.myColors:
                 groupVec.append(clr.lab2rgb([[color.value]])[0][0])
             dispArray.append(groupVec)
