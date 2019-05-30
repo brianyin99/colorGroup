@@ -3,14 +3,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 from skimage import color as clr
 
+
+assocTol = 0.07
+numHouses = 4
+colorsPerHouse = 5
+assocRange = [0, 0.2]
+myFolder = 'results/assocTol = 0.07 sum'
+
 for i in range(12):
     myConcept = i
-    assocTol = 0.07
-    numHouses = 4
-    colorsPerHouse = 5
-    assocRange = [0, 0.2]
-    myFolder = 'results/assocTol = 0.07 fixed'
-
 
     # get and sort data from helpers.py
     conceptData = helpers.data[myConcept] # 1xnumColors; correlation for each of numColors colors
