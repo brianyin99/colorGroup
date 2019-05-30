@@ -25,6 +25,7 @@ with open("Lab.csv") as csvfile:
         colorData.append(row)
 
 class ColorAbstract(ABC):
+    """Abstract color class that stores index, association to a given concept, and CIELAB value"""
     def __init__(self, index, assoc):
         self.index = index
         self.assoc = assoc
@@ -42,7 +43,7 @@ class ColorReal(ColorAbstract):
 
     def findDistances(self, colorHouses):
         for colorHouse in colorHouses:
-            self.houseDist[colorHouse] = computeDeltaE(colorHouse, self)
+            self.houseDist[colorHouse] = clr.deltaE_ciede2000(colorHouse.value, self.value)
 
 
 class ColorHouse(ColorAbstract): # self is not in myColors
@@ -69,12 +70,6 @@ def diff(first, second):
     second = set(second)
     return [item for item in first if item not in second]
 
-
-def computeDeltaE(color1, color2):
-    color1, color2 = color1.value, color2.value
-    return clr.deltaE_ciede2000(color1, color2)
-
-
 def groupColors(myConcept, houseColors, conceptData, assocRange, colorsPerHouse):
     """For each color house (colors strongly associated with the
     given concept), find COLORSPERHOUSE colors that are weakly
@@ -91,7 +86,11 @@ def groupColors(myConcept, houseColors, conceptData, assocRange, colorsPerHouse)
     for color in conceptData:
         if color not in houseColors and assocRange[0] <= color[1] and color[1] <= assocRange[1]:
             colorsToGroup.append(ColorReal(color[0], color[1]))
-    assert len(colorsToGroup) >= numHouses * (colorsPerHouse), "Not enough colors to group"
+
+    # remove white?
+    colorsToGroup = [colorReal for colorReal in colorsToGroup if colorReal.value != [100, 0, 0]]
+
+    assert len(colorsToGroup) >= numHouses * (colorsPerHouse), "Not enough colors to group, try increasing assocRange"
 
     # for each color to be grouped, compute dist to each house
     for color in colorsToGroup:
@@ -119,8 +118,8 @@ def groupColors(myConcept, houseColors, conceptData, assocRange, colorsPerHouse)
             if myHouse.isFull:
                 colorToGroup.houseDist[myHouse] = math.inf
             else:
-                colorToGroup.houseDist[myHouse] += computeDeltaE(colorToGroup, myColor)
-                # colorToGroup.houseDist[myHouse] = max(colorToGroup.houseDist[myHouse], computeDeltaE(colorToGroup, myColor))
+                colorToGroup.houseDist[myHouse] += clr.deltaE_ciede2000(colorToGroup.value, myColor.value)
+                # colorToGroup.houseDist[myHouse] = max(colorToGroup.houseDist[myHouse], clr.deltaE_ciede2000(colorToGroup.value, myColor.value))
 
     return myHouses
 
