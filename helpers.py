@@ -38,6 +38,7 @@ class ColorAbstract(ABC):
 
 
 class ColorReal(ColorAbstract):
+    """Instance of a color that will be grouped; stores weights of houses (strongly associated colors)"""
     def __init__(self, index, assoc):
         super().__init__(index, assoc)
         self.isGrouped = False
@@ -48,21 +49,21 @@ class ColorReal(ColorAbstract):
             self.houseWeights[colorHouse] = clr.deltaE_ciede2000(colorHouse.value, self.value)"""
 
     def updateWeights(self, colorHouses):
+        """Update self.houseWeights using some heuristic"""
 
         # update weight for each house
         for colorHouse in colorHouses:
-
             allDeltaEs = []
             valueList = [self.value]
-
             for myColor in colorHouse.myColors:
                 valueList.append(myColor.value)
 
-            # add all pairwise delta Es to allDeltaEs
+            # add all pairwise delta Es to allDeltaEs (complete graph)
             for i in range(len(valueList)):
                 for j in range(i + 1, len(valueList)):
                     allDeltaEs.append(clr.deltaE_ciede2000(valueList[i], valueList[j]))
 
+            # metric for determine house weights
             houseWeight = np.var(allDeltaEs)
             # houseWeight = max(allDeltaEs) - min(allDeltaEs)
             # houseWeight = 13
@@ -71,10 +72,11 @@ class ColorReal(ColorAbstract):
                 self.houseWeights[colorHouse] = houseWeight
 
 
-class ColorHouse(ColorAbstract): # self is not in myColors
+class ColorHouse(ColorAbstract):
+    """Color strongly associated with concept, fixed in its own house"""
     def __init__(self, index, assoc, colorsPerHouse):
         super().__init__(index, assoc)
-        self.myColors = []
+        self.myColors = [] # self is not in myColors
         self.capacity = colorsPerHouse
 
     @property
@@ -96,9 +98,10 @@ def diff(first, second):
     return [item for item in first if item not in second]
 
 def calcHeurs(allResults): #allResults is [myHouses, myHouses, myHouses]
-    allVars = []
-    allDiffs = []
+    """Takes delta E values from all results, gives back avg heuristics per row"""
+    allVars, allDiffs = [], []
     for myHouses in allResults:
+        # per row computation
         for myHouse in myHouses:
             allDeltaEs = []
             valueList = [myHouse.value]
@@ -116,7 +119,7 @@ def calcHeurs(allResults): #allResults is [myHouses, myHouses, myHouses]
     return (sum(allVars)/len(allVars), sum(allDiffs)/len(allDiffs))
 
 
-def groupColors(myConcept, houseColors, conceptData, assocRange, colorsPerHouse, mySeed):
+def groupColors(houseColors, conceptData, assocRange, colorsPerHouse, mySeed):
     """For each color house (colors strongly associated with the
     given concept), find COLORSPERHOUSE colors that are weakly
     associated with MYCONCEPT"""
@@ -136,9 +139,9 @@ def groupColors(myConcept, houseColors, conceptData, assocRange, colorsPerHouse,
     # remove white?
     # colorsToGroup = [colorReal for colorReal in colorsToGroup if colorReal.value != [100, 0, 0]]
 
-    assert len(colorsToGroup) >= numHouses * (colorsPerHouse), "Not enough colors to group, try increasing assocRange"
+    assert len(colorsToGroup) >= numHouses * colorsPerHouse, "Not enough colors to group, try increasing assocRange"
 
-    """"# for each color to be grouped, compute weight of each house
+    """# for each color to be grouped, compute weight of each house
     for color in colorsToGroup:
         color.findWeights(myHouses)"""
 
@@ -156,12 +159,13 @@ def groupColors(myConcept, houseColors, conceptData, assocRange, colorsPerHouse,
 
     grouped = 4
 
-    # while all houses are not full: group first color in colorsToGroup
+    # while houses are not full
     while False in [house.isFull for house in myHouses]:
 
-        # sort colors by smallest value in weight vector
+        # sort colors by smallest value in weight vector (greedy approach)
         colorsToGroup.sort(key=lambda x: min(x.houseWeights.values()))
 
+        # group smallest color
         myColor = colorsToGroup[0]
         assert(not myColor.isGrouped), "Tried to group a grouped color"
         myHouse = None
@@ -172,6 +176,7 @@ def groupColors(myConcept, houseColors, conceptData, assocRange, colorsPerHouse,
         colorsToGroup.pop(0)
         grouped += 1
         print(grouped, myHouse.index)
+
         """for colorToGroup in colorsToGroup:
             if myHouse.isFull:
                 colorToGroup.houseWeights[myHouse] = math.inf
@@ -179,6 +184,7 @@ def groupColors(myConcept, houseColors, conceptData, assocRange, colorsPerHouse,
                 colorToGroup.houseWeights[myHouse] += clr.deltaE_ciede2000(colorToGroup.value, myColor.value)
                 # colorToGroup.houseWeights[myHouse] = max(colorToGroup.houseWeights[myHouse], clr.deltaE_ciede2000(colorToGroup.value, myColor.value))"""
 
+        # update all house weights for ungrouped colors
         for colorToGroup in colorsToGroup:
             if myHouse.isFull:
                 colorToGroup.houseWeights[myHouse] = math.inf

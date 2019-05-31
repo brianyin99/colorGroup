@@ -17,11 +17,13 @@ def processData(myFolder, assocTol=0.09, numHouses=4, colorsPerHouse=4, assocRan
         numColors = len(conceptData)
         conceptData =[(i, conceptData[i]) for i in range(numColors)] # [(color index, association)]
         conceptData.sort(key=lambda x: x[1], reverse=True)
-        colorIndices = [color[0] for color in conceptData]
-        colorAssoc = [color[1] for color in conceptData]
 
-        """# get colors for plotting
-        labBarColors = [helpers.colorData[i] for i in colorIndices] # [[L, a, b]]
+        # for plotting
+        """colorIndices = [color[0] for color in conceptData]
+        colorAssoc = [color[1] for color in conceptData]"""
+
+        # get colors for plotting
+        """labBarColors = [helpers.colorData[i] for i in colorIndices] # [[L, a, b]]
         rgbBarColors = [clr.lab2rgb([[labVal]])[0][0] for labVal in labBarColors] # change lab to rgb"""
 
         # get house colors, i.e. colors strongly associated with myConcept
@@ -41,12 +43,11 @@ def processData(myFolder, assocTol=0.09, numHouses=4, colorsPerHouse=4, assocRan
         plt.show()"""
 
         # group colors
-        colorHouses = helpers.groupColors(myConcept, houseColors, conceptData, assocRange, colorsPerHouse, mySeed)
+        colorHouses = helpers.groupColors(houseColors, conceptData, assocRange, colorsPerHouse, mySeed)
         resultsList.append(colorHouses)
-
         print('done')
 
-        # display colors
+        # display colors on grid from 2D array
         colorArray = []
         valueArray = []
         for colorHouse in colorHouses:
@@ -60,6 +61,7 @@ def processData(myFolder, assocTol=0.09, numHouses=4, colorsPerHouse=4, assocRan
         plt.imshow(valueArray)
         plt.title(helpers.allConcepts[myConcept])
 
+        # display concept associations over grid
         for i in range(len(colorArray)):
             for j in range((len(colorArray[i]))):
                 textColor = 'black'
@@ -73,4 +75,4 @@ def processData(myFolder, assocTol=0.09, numHouses=4, colorsPerHouse=4, assocRan
     print(helpers.calcHeurs(resultsList))
 
 
-processData('results/0.09 var test')
+processData('results/changeMe')
