@@ -44,9 +44,9 @@ class ColorReal(ColorAbstract):
         self.isGrouped = False
         self.houseWeights = {}
 
-    """def findWeights(self, colorHouses):
+    def findDeltaEs(self, colorHouses):
         for colorHouse in colorHouses:
-            self.houseWeights[colorHouse] = clr.deltaE_ciede2000(colorHouse.value, self.value)"""
+            self.houseWeights[colorHouse] = clr.deltaE_ciede2000(colorHouse.value, self.value)
 
     def updateWeights(self, colorHouses):
         """Update self.houseWeights using some heuristic"""
@@ -64,8 +64,8 @@ class ColorReal(ColorAbstract):
                     allDeltaEs.append(clr.deltaE_ciede2000(valueList[i], valueList[j]))
 
             # metric for determine house weights
-            houseWeight = np.var(allDeltaEs)
-            # houseWeight = max(allDeltaEs) - min(allDeltaEs)
+            # houseWeight = np.var(allDeltaEs)
+            houseWeight = max(allDeltaEs) - min(allDeltaEs)
             # houseWeight = 13
 
             if not (colorHouse in self.houseWeights and self.houseWeights[colorHouse] == math.inf):
@@ -143,12 +143,21 @@ def groupColors(houseColors, conceptData, assocRange, colorsPerHouse, mySeed):
 
     """# for each color to be grouped, compute weight of each house
     for color in colorsToGroup:
-        color.findWeights(myHouses)"""
+        color.findDeltaEs(myHouses)"""
 
-    # pseudorandomly group first numHouses colors
-    random.seed(mySeed)
+    # pseudorandomly group first numHouses colors (one per house)
+    """random.seed(mySeed)
     for i in range(numHouses):
         choice = random.choice(colorsToGroup)
+        myHouses[i].addColor(choice)
+        colorsToGroup.remove(choice)"""
+
+    # group first numHouses colors (one per house) by min E
+    for color in colorsToGroup:
+        color.findDeltaEs(myHouses)
+    for i in range(numHouses):
+        colorsToGroup.sort(key=lambda x: x.houseWeights[myHouses[i]])
+        choice = colorsToGroup[0]
         myHouses[i].addColor(choice)
         colorsToGroup.remove(choice)
 

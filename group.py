@@ -75,4 +75,4 @@ def processData(myFolder, assocTol=0.09, numHouses=4, colorsPerHouse=4, assocRan
     print(helpers.calcHeurs(resultsList))
 
 
-processData('results/changeMe')
+processData('results/0.09 min E max-min')
