@@ -2,6 +2,8 @@ import csv
 from skimage import color as clr
 import math
 from abc import ABC
+import numpy as np
+import random
 
 # Concept names; indices align with data_clean.csv
 allConcepts = ['mango','watermelon','honeydew','cantaloupe','grapefruit','strawberry','raspberry','blueberry',
@@ -39,11 +41,34 @@ class ColorReal(ColorAbstract):
     def __init__(self, index, assoc):
         super().__init__(index, assoc)
         self.isGrouped = False
-        self.houseDist = {}
+        self.houseWeights = {}
 
-    def findDistances(self, colorHouses):
+    """def findWeights(self, colorHouses):
         for colorHouse in colorHouses:
-            self.houseDist[colorHouse] = clr.deltaE_ciede2000(colorHouse.value, self.value)
+            self.houseWeights[colorHouse] = clr.deltaE_ciede2000(colorHouse.value, self.value)"""
+
+    def updateWeights(self, colorHouses):
+
+        # update weight for each house
+        for colorHouse in colorHouses:
+
+            allDeltaEs = []
+            valueList = [self.value]
+
+            for myColor in colorHouse.myColors:
+                valueList.append(myColor.value)
+
+            # add all pairwise delta Es to allDeltaEs
+            for i in range(len(valueList)):
+                for j in range(i + 1, len(valueList)):
+                    allDeltaEs.append(clr.deltaE_ciede2000(valueList[i], valueList[j]))
+
+            houseWeight = np.var(allDeltaEs)
+            # houseWeight = max(allDeltaEs) - min(allDeltaEs)
+            # houseWeight = 13
+
+            if not (colorHouse in self.houseWeights and self.houseWeights[colorHouse] == math.inf):
+                self.houseWeights[colorHouse] = houseWeight
 
 
 class ColorHouse(ColorAbstract): # self is not in myColors
@@ -70,7 +95,28 @@ def diff(first, second):
     second = set(second)
     return [item for item in first if item not in second]
 
-def groupColors(myConcept, houseColors, conceptData, assocRange, colorsPerHouse):
+def calcHeurs(allResults): #allResults is [myHouses, myHouses, myHouses]
+    allVars = []
+    allDiffs = []
+    for myHouses in allResults:
+        for myHouse in myHouses:
+            allDeltaEs = []
+            valueList = [myHouse.value]
+
+            for myColor in myHouse.myColors:
+                valueList.append(myColor.value)
+
+            # add all pairwise delta Es to allDeltaEs
+            for i in range(len(valueList)):
+                for j in range(i + 1, len(valueList)):
+                    allDeltaEs.append(clr.deltaE_ciede2000(valueList[i], valueList[j]))
+            allVars.append(np.var(allDeltaEs))
+            allDiffs.append(max(allDeltaEs) - min(allDeltaEs))
+
+    return (sum(allVars)/len(allVars), sum(allDiffs)/len(allDiffs))
+
+
+def groupColors(myConcept, houseColors, conceptData, assocRange, colorsPerHouse, mySeed):
     """For each color house (colors strongly associated with the
     given concept), find COLORSPERHOUSE colors that are weakly
     associated with MYCONCEPT"""
@@ -88,38 +134,55 @@ def groupColors(myConcept, houseColors, conceptData, assocRange, colorsPerHouse)
             colorsToGroup.append(ColorReal(color[0], color[1]))
 
     # remove white?
-    colorsToGroup = [colorReal for colorReal in colorsToGroup if colorReal.value != [100, 0, 0]]
+    # colorsToGroup = [colorReal for colorReal in colorsToGroup if colorReal.value != [100, 0, 0]]
 
     assert len(colorsToGroup) >= numHouses * (colorsPerHouse), "Not enough colors to group, try increasing assocRange"
 
-    # for each color to be grouped, compute dist to each house
+    """"# for each color to be grouped, compute weight of each house
     for color in colorsToGroup:
-        color.findDistances(myHouses)
+        color.findWeights(myHouses)"""
 
-    grouped = 0
+    # pseudorandomly group first numHouses colors
+    random.seed(mySeed)
+    for i in range(numHouses):
+        choice = random.choice(colorsToGroup)
+        myHouses[i].addColor(choice)
+        colorsToGroup.remove(choice)
+
+    # update house weights for each colorToGroup
+    for colorToGroup in colorsToGroup:
+        colorToGroup.updateWeights(myHouses)
+
+
+    grouped = 4
 
     # while all houses are not full: group first color in colorsToGroup
     while False in [house.isFull for house in myHouses]:
 
-        # sort colors by smallest value in dist vector
-        colorsToGroup.sort(key=lambda x: min(x.houseDist.values()))
+        # sort colors by smallest value in weight vector
+        colorsToGroup.sort(key=lambda x: min(x.houseWeights.values()))
 
         myColor = colorsToGroup[0]
         assert(not myColor.isGrouped), "Tried to group a grouped color"
         myHouse = None
-        for house, assoc in myColor.houseDist.items():
-            if assoc == min(myColor.houseDist.values()):
+        for house, assoc in myColor.houseWeights.items():
+            if assoc == min(myColor.houseWeights.values()):
                 myHouse = house
         myHouse.addColor(myColor)
         colorsToGroup.pop(0)
         grouped += 1
         print(grouped, myHouse.index)
+        """for colorToGroup in colorsToGroup:
+            if myHouse.isFull:
+                colorToGroup.houseWeights[myHouse] = math.inf
+            else:
+                colorToGroup.houseWeights[myHouse] += clr.deltaE_ciede2000(colorToGroup.value, myColor.value)
+                # colorToGroup.houseWeights[myHouse] = max(colorToGroup.houseWeights[myHouse], clr.deltaE_ciede2000(colorToGroup.value, myColor.value))"""
+
         for colorToGroup in colorsToGroup:
             if myHouse.isFull:
-                colorToGroup.houseDist[myHouse] = math.inf
-            else:
-                colorToGroup.houseDist[myHouse] += clr.deltaE_ciede2000(colorToGroup.value, myColor.value)
-                # colorToGroup.houseDist[myHouse] = max(colorToGroup.houseDist[myHouse], clr.deltaE_ciede2000(colorToGroup.value, myColor.value))
+                colorToGroup.houseWeights[myHouse] = math.inf
+            colorToGroup.updateWeights(myHouses)
 
     return myHouses
 

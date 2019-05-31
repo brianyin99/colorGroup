@@ -4,7 +4,9 @@ import numpy as np
 from skimage import color as clr
 from scipy.special import comb
 
-def processData(myFolder, assocTol=0.07, numHouses=4, colorsPerHouse=4, assocRange=(0, 0.2)):
+def processData(myFolder, assocTol=0.07, numHouses=4, colorsPerHouse=4, assocRange=(0, 0.2), mySeed=42):
+
+    resultsList = []
 
     # find grouping for each of 12 concepts
     for i in range(12):
@@ -39,7 +41,9 @@ def processData(myFolder, assocTol=0.07, numHouses=4, colorsPerHouse=4, assocRan
         plt.show()"""
 
         # group colors
-        colorHouses = helpers.groupColors(myConcept, houseColors, conceptData, assocRange, colorsPerHouse)
+        colorHouses = helpers.groupColors(myConcept, houseColors, conceptData, assocRange, colorsPerHouse, mySeed)
+        resultsList.append(colorHouses)
+
         print('done')
 
         # display colors
@@ -53,5 +57,7 @@ def processData(myFolder, assocTol=0.07, numHouses=4, colorsPerHouse=4, assocRan
         plt.title(helpers.allConcepts[myConcept])
         plt.savefig(myFolder + '/' + helpers.allConcepts[myConcept] + '.svg', format='svg')
 
+    print(helpers.calcHeurs(resultsList))
 
-processData('results/0.07 sum no white')
+
+processData('results/0.07 var bad')
