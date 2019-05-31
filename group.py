@@ -69,10 +69,25 @@ def processData(myFolder, assocTol=0.09, numHouses=4, colorsPerHouse=4, assocRan
                     textColor = 'white'
                 plt.text(j - 0.25, i, str.format('{0:.4f}', colorArray[i][j].assoc), color=textColor)
 
+        # calculate min delta E, max delta E, and variance for each row
+        for i in range(len(colorArray)):
+            deltaEs = []
+            myVals = colorArray[i]
+            for j in range(len(myVals)):
+                for k in range(j + 1, len(myVals)):
+                    deltaEs.append(clr.deltaE_ciede2000(myVals[j].value, myVals[k].value))
+            minDeltaE = min(deltaEs)
+            maxDeltaE = max(deltaEs)
+            varDeltaE = np.var(deltaEs)
+            plt.text(5, i - 0.3, "Min delta E: " + str.format('{0:.4f}', minDeltaE))
+            plt.text(5, i - 0.1, "Max delta E: " + str.format('{0:.4f}', maxDeltaE))
+            plt.text(5, i + 0.1, "Max - min delta E: " + str.format('{0:.4f}', maxDeltaE - minDeltaE))
+            plt.text(5, i + 0.3, "Delta E var: " + str.format('{0:.4f}', varDeltaE))
 
-        plt.savefig(myFolder + '/' + helpers.allConcepts[myConcept] + '.svg', format='svg')
+
+        plt.savefig(myFolder + '/' + helpers.allConcepts[myConcept] + '.svg', format='svg', bbox_inches='tight')
         plt.close()
     print(helpers.calcHeurs(resultsList))
 
 
-processData('results/0.09 min E max-min')
+processData('results/0.09 min E var')

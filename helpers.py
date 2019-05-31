@@ -165,7 +165,6 @@ def groupColors(houseColors, conceptData, assocRange, colorsPerHouse, mySeed):
     for colorToGroup in colorsToGroup:
         colorToGroup.updateWeights(myHouses)
 
-
     grouped = 4
 
     # while houses are not full
