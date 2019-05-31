@@ -4,7 +4,7 @@ import numpy as np
 from skimage import color as clr
 from scipy.special import comb
 
-def processData(myFolder, assocTol=0.07, numHouses=4, colorsPerHouse=4, assocRange=(0, 0.2), mySeed=42):
+def processData(myFolder, assocTol=0.09, numHouses=4, colorsPerHouse=4, assocRange=(0, 0.2), mySeed=42):
 
     resultsList = []
 
@@ -47,17 +47,30 @@ def processData(myFolder, assocTol=0.07, numHouses=4, colorsPerHouse=4, assocRan
         print('done')
 
         # display colors
-        dispArray = []
+        colorArray = []
+        valueArray = []
         for colorHouse in colorHouses:
-            groupVec = [clr.lab2rgb([[colorHouse.value]])[0][0]]
+            colorVec = [colorHouse]
+            valueVec = [clr.lab2rgb([[colorHouse.value]])[0][0]]
             for color in colorHouse.myColors:
-                groupVec.append(clr.lab2rgb([[color.value]])[0][0])
-            dispArray.append(groupVec)
-        plt.imshow(dispArray)
+                colorVec.append(color)
+                valueVec.append(clr.lab2rgb([[color.value]])[0][0])
+            colorArray.append(colorVec)
+            valueArray.append(valueVec)
+        plt.imshow(valueArray)
         plt.title(helpers.allConcepts[myConcept])
-        plt.savefig(myFolder + '/' + helpers.allConcepts[myConcept] + '.svg', format='svg')
 
+        for i in range(len(colorArray)):
+            for j in range((len(colorArray[i]))):
+                textColor = 'black'
+                if colorArray[i][j].value[0] < 50:
+                    textColor = 'white'
+                plt.text(j - 0.25, i, str.format('{0:.4f}', colorArray[i][j].assoc), color=textColor)
+
+
+        plt.savefig(myFolder + '/' + helpers.allConcepts[myConcept] + '.svg', format='svg')
+        plt.close()
     print(helpers.calcHeurs(resultsList))
 
 
-processData('results/0.07 var bad')
+processData('results/0.09 var test')
