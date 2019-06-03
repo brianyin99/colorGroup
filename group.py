@@ -90,4 +90,4 @@ def processData(myFolder, assocTol=0.09, numHouses=4, colorsPerHouse=4, assocRan
     print(helpers.calcHeurs(resultsList))
 
 
-processData('results/0.09 min E var')
+processData('results/0.09 min E var fix no white')

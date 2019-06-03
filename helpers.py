@@ -54,7 +54,7 @@ class ColorReal(ColorAbstract):
         # update weight for each house
         for colorHouse in colorHouses:
             allDeltaEs = []
-            valueList = [self.value]
+            valueList = [colorHouse.value, self.value]
             for myColor in colorHouse.myColors:
                 valueList.append(myColor.value)
 
@@ -64,8 +64,8 @@ class ColorReal(ColorAbstract):
                     allDeltaEs.append(clr.deltaE_ciede2000(valueList[i], valueList[j]))
 
             # metric for determine house weights
-            # houseWeight = np.var(allDeltaEs)
-            houseWeight = max(allDeltaEs) - min(allDeltaEs)
+            houseWeight = np.var(allDeltaEs)
+            # houseWeight = max(allDeltaEs) - min(allDeltaEs)
             # houseWeight = 13
 
             if not (colorHouse in self.houseWeights and self.houseWeights[colorHouse] == math.inf):
@@ -141,8 +141,8 @@ def groupColors(houseColors, conceptData, assocRange, colorsPerHouse, mySeed):
 
     assert len(colorsToGroup) >= numHouses * colorsPerHouse, "Not enough colors to group, try increasing assocRange"
 
-    """# for each color to be grouped, compute weight of each house
-    for color in colorsToGroup:
+    # for each color to be grouped, compute weight of each house
+    """for color in colorsToGroup:
         color.findDeltaEs(myHouses)"""
 
     # pseudorandomly group first numHouses colors (one per house)
@@ -152,7 +152,7 @@ def groupColors(houseColors, conceptData, assocRange, colorsPerHouse, mySeed):
         myHouses[i].addColor(choice)
         colorsToGroup.remove(choice)"""
 
-    # group first numHouses colors (one per house) by min E
+    # group first numHouses colors (one per house) by min E (mitigates worsening of algorithm from house capacity)
     for color in colorsToGroup:
         color.findDeltaEs(myHouses)
     for i in range(numHouses):
