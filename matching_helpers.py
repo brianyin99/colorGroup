@@ -1,31 +1,32 @@
 import helpers
 from skimage import color as clr
 import networkx as nx
+import matplotlib.pyplot as plt
 
 
 class Matching:
     def __init__(self, concepts, colors, max_low, min_high):
         self.concepts = concepts
-        self.colors = colors
+        self.colors = [helpers.colorData.index(color) for color in colors]
         self.max_low = max_low
         self.min_high = min_high
 
-    def my_graph(self):
-        """Weighted bipartite graph of matching"""
         B = nx.Graph()
         B.add_nodes_from(self.concepts, bipartite=0)
         B.add_nodes_from(self.colors, bipartite=1)
         for concept in self.concepts:
             for color in self.colors:
                 B.add_edge(concept, color, weight=helpers.data[concept][color])
-        return B
+
+
+        self.my_graph = B
 
     def all_delta_es(self):
         """Compute delta E between each pair of colors"""
         delta_e_list = []
         for i in range(len(self.colors)):
             for j in range(i + 1, len(self.colors)):
-                delta_e_list.append(clr.deltaE_ciede2000(self.colors[i], self.colors[j]))
+                delta_e_list.append(clr.deltaE_ciede2000(helpers.colorData[self.colors[i]], helpers.colorData[self.colors[j]]))
         return delta_e_list
 
     def delta_es_diff(self):
@@ -77,3 +78,43 @@ for i in range(len(color_values)):
             else:
                 final_pairings[high_concept] = [my_color]
             print(helpers.allConcepts[high_concept])
+
+
+
+def displayMatching(my_matching):
+    """Display the graph representation of a Matching instance"""
+    B = my_matching.my_graph
+
+    pos = {}
+    pos.update((node, (my_matching.concepts.index(node), 2)) for node in my_matching.concepts)
+    pos.update((node, (my_matching.colors.index(node), 1)) for node in my_matching.colors)
+    weights = [B[u][v]['weight'] for u,v in B.edges]
+    labels = {}
+    for node in my_matching.concepts:
+        labels[node] = helpers.allConcepts[node]
+    for node in my_matching.colors:
+        labels[node] = helpers.colorData[node]
+
+    pos_higher = {}
+    pos_higher.update((node, (my_matching.concepts.index(node), 2.05)) for node in my_matching.concepts)
+    pos_higher.update((node, (my_matching.colors.index(node), 0.95)) for node in my_matching.colors)
+
+    values = [clr.lab2rgb([[helpers.colorData[node]]])[0][0].tolist() for node in my_matching.colors]
+
+    nx.draw(B, pos=pos, width=weights)
+    nx.draw_networkx_labels(B, pos_higher, labels=labels)
+    nx.draw_networkx_nodes(B, pos=pos, nodelist=my_matching.concepts, node_color='w', edgecolors='k', node_size=400)
+    nx.draw_networkx_nodes(B, pos=pos, nodelist=my_matching.colors, node_color=values, node_shape='s', node_size=500)
+
+    plt.show()
+
+my_colors = []
+for concept in my_concepts:
+    my_colors.append(final_pairings[concept][0])
+my_matching = Matching(my_concepts, my_colors, high_range[0], low_range[1])
+displayMatching(my_matching)
+
+
+
+
+print('done')
