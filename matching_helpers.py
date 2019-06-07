@@ -2,14 +2,15 @@ import helpers
 from skimage import color as clr
 import networkx as nx
 import matplotlib.pyplot as plt
+import itertools
 
 
 class Matching:
-    def __init__(self, concepts, colors, max_low, min_high):
+    def __init__(self, concepts, colors, low_range, high_range):
         self.concepts = concepts
         self.colors = [helpers.colorData.index(color) for color in colors]
-        self.max_low = max_low
-        self.min_high = min_high
+        self.low_range = low_range
+        self.high_range = high_range
 
         B = nx.Graph()
         B.add_nodes_from(self.concepts, bipartite=0)
@@ -34,54 +35,58 @@ class Matching:
         delta_e_list = self.all_delta_es
         return max(delta_e_list) - min(delta_e_list)
 
+def has_valid_matching(my_concepts, high_range, low_range):
+    """Returns a dictionary of valid matching(s) or False"""
+
+    color_ratings = helpers.data
+    color_values = helpers.colorData
+    colors_remaining = color_values.copy()
+    final_pairings = {} # (concept, [LAB value(s)])
+
+    # for each color, discard color unless highly associated with exactly one concept and weakly associated with the rest
+    for i in range(len(color_values)):
+        my_color = color_values[i]
+
+        # color should be highly associated with one concept
+        num_high_assoc = 0
+        high_concept = None
+        for concept_index in my_concepts:
+            color_assoc = color_ratings[concept_index][i]
+            if color_assoc >= high_range[0] and color_assoc <= high_range[1]:
+                high_concept = concept_index
+                num_high_assoc += 1
+        if num_high_assoc == 1:
+
+            # color should be weakly associated with remaining concepts
+            concepts_passed = 0
+            for concept in my_concepts:
+                if not concept == high_concept:
+                    if color_ratings[concept][i] >= low_range[0] and color_ratings[concept][i] <= low_range[1]:
+                        concepts_passed += 1
+            if concepts_passed == len(my_concepts) - 1:
+                if high_concept in final_pairings:
+                    final_pairings[high_concept].append(my_color)
+                else:
+                    final_pairings[high_concept] = [my_color]
+                print(helpers.allConcepts[high_concept])
+
+    # if some concept does not have a color, return False
+    if False in [concept in final_pairings for concept in my_concepts]:
+        return False
+    # compute all possible matchings
+    else:
+        # list of all matching combinations
+        # https://codereview.stackexchange.com/questions/171173/list-all-possible-permutations-from-a-python-dictionary-of-lists
+        all_matchings = []
+        keys, values = zip(*final_pairings.items())
+        all_matching_dicts = [dict(zip(keys, v)) for v in itertools.product(*values)] # [{concept: LAB value, concept: LAB value, etc.}]
+        for matching in all_matching_dicts:
+            all_matchings.append(Matching(list(matching.keys()), list(matching.values()), low_range, high_range))
+
+        return all_matchings
 
 
-my_concepts = [0, 1, 2, 3]
-high_range = [0.55, 1]
-low_range = [0, 0.45]
-
-color_ratings = helpers.data
-color_values = helpers.colorData
-colors_remaining = color_values.copy()
-
-final_pairings = {}
-
-
-# for each color, discard color unless highly associated with exactly one concept and weakly associated with the rest
-for i in range(len(color_values)):
-    my_color = color_values[i]
-
-    # discard color unless highly associated with exactly one concept
-    num_high_assoc = 0
-    high_concept = None
-    for concept_index in my_concepts:
-        color_assoc = color_ratings[concept_index][i]
-        if color_assoc >= high_range[0] and color_assoc <= high_range[1]:
-            high_concept = concept_index
-            num_high_assoc += 1
-    if not num_high_assoc == 1:
-        colors_remaining.remove(my_color)
-        continue
-
-    # discard color unless weakly associated with remaining concepts
-    concepts_passed = 0
-    for concept in my_concepts:
-        if not concept == high_concept:
-            if not (color_ratings[concept][i] >= low_range[0] and color_ratings[concept][i] <= low_range[1]):
-                colors_remaining.remove(my_color)
-                break
-            else:
-                concepts_passed += 1
-        if concepts_passed == len(my_concepts) - 1:
-            if high_concept in final_pairings:
-                final_pairings[high_concept].append(my_color)
-            else:
-                final_pairings[high_concept] = [my_color]
-            print(helpers.allConcepts[high_concept])
-
-
-
-def displayMatching(my_matching):
+def display_matching(my_matching):
     """Display the graph representation of a Matching instance"""
     B = my_matching.my_graph
 
@@ -108,11 +113,13 @@ def displayMatching(my_matching):
 
     plt.show()
 
-my_colors = []
-for concept in my_concepts:
-    my_colors.append(final_pairings[concept][0])
-my_matching = Matching(my_concepts, my_colors, high_range[0], low_range[1])
-displayMatching(my_matching)
+
+
+my_concepts = [0, 1, 2, 3]
+high_range = [0.55, 1]
+low_range = [0, 0.45]
+test_matching = has_valid_matching(my_concepts, high_range, low_range)[7]
+display_matching(test_matching)
 
 
 
