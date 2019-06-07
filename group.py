@@ -11,6 +11,7 @@ def processData(myFolder, assocTol=0.09, numHouses=4, colorsPerHouse=4, assocRan
     # find grouping for each of 12 concepts
     for i in range(12):
         myConcept = i
+        print(helpers.allConcepts[i])
 
         # get and sort data from helpers.py
         conceptData = helpers.data[myConcept] # 1xnumColors; correlation for each of numColors colors
@@ -90,4 +91,4 @@ def processData(myFolder, assocTol=0.09, numHouses=4, colorsPerHouse=4, assocRan
     print(helpers.calcHeurs(resultsList))
 
 
-processData('results/0.09 min E var fix no white')
+processData('results/0.09 min E var fix')

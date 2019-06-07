@@ -183,7 +183,7 @@ def groupColors(houseColors, conceptData, assocRange, colorsPerHouse, mySeed):
         myHouse.addColor(myColor)
         colorsToGroup.pop(0)
         grouped += 1
-        print(grouped, myHouse.index)
+        print(grouped, myHouse.index, myHouse.assoc)
 
         """for colorToGroup in colorsToGroup:
             if myHouse.isFull:
@@ -197,6 +197,5 @@ def groupColors(houseColors, conceptData, assocRange, colorsPerHouse, mySeed):
             if myHouse.isFull:
                 colorToGroup.houseWeights[myHouse] = math.inf
             colorToGroup.updateWeights(myHouses)
-
     return myHouses
 
