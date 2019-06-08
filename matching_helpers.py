@@ -68,7 +68,7 @@ def has_valid_matching(my_concepts, high_range, low_range):
                     final_pairings[high_concept].append(my_color)
                 else:
                     final_pairings[high_concept] = [my_color]
-                print(helpers.allConcepts[high_concept])
+                # print(helpers.allConcepts[high_concept])
 
     # if some concept does not have a color, return False
     if False in [concept in final_pairings for concept in my_concepts]:
@@ -88,12 +88,12 @@ def has_valid_matching(my_concepts, high_range, low_range):
 
 def display_matching(my_matching):
     """Display the graph representation of a Matching instance"""
-    B = my_matching.my_graph
+    G = my_matching.my_graph
 
     pos = {}
     pos.update((node, (my_matching.concepts.index(node), 2)) for node in my_matching.concepts)
     pos.update((node, (my_matching.colors.index(node), 1)) for node in my_matching.colors)
-    weights = [B[u][v]['weight'] for u,v in B.edges]
+    weights = [G[u][v]['weight'] for u,v in G.edges]
     labels = {}
     for node in my_matching.concepts:
         labels[node] = helpers.allConcepts[node]
@@ -106,10 +106,18 @@ def display_matching(my_matching):
 
     values = [clr.lab2rgb([[helpers.colorData[node]]])[0][0].tolist() for node in my_matching.colors]
 
-    nx.draw(B, pos=pos, width=weights)
-    nx.draw_networkx_labels(B, pos_higher, labels=labels)
-    nx.draw_networkx_nodes(B, pos=pos, nodelist=my_matching.concepts, node_color='w', edgecolors='k', node_size=400)
-    nx.draw_networkx_nodes(B, pos=pos, nodelist=my_matching.colors, node_color=values, node_shape='s', node_size=500)
+    nx.draw(G, pos=pos, width=weights)
+    nx.draw_networkx_labels(G, pos_higher, labels=labels)
+    nx.draw_networkx_nodes(G, pos=pos, nodelist=my_matching.concepts, node_color='w', edgecolors='k', node_size=400)
+    nx.draw_networkx_nodes(G, pos=pos, nodelist=my_matching.colors, node_color=values, node_shape='s', node_size=500)
+
+    # https://stackoverflow.com/questions/28957286/how-to-remove-an-attribute-from-the-edge-label-in-a-networkx-graph
+    labels = {}
+    for u, v, data in G.edges(data=True):
+        labels[(u, v)] = str.format('{0:.3f}', data['weight'])
+
+
+    nx.draw_networkx_edge_labels(G, pos=pos, edge_labels=labels, label_pos=0.8)
 
     plt.show()
 
