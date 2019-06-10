@@ -32,11 +32,11 @@ class Matching:
 
     def delta_es_diff(self):
         """Return max value - min value for all_delta_es"""
-        delta_e_list = self.all_delta_es
+        delta_e_list = self.all_delta_es()
         return max(delta_e_list) - min(delta_e_list)
 
-def has_valid_matching(my_concepts, high_range, low_range):
-    """Returns a dictionary of valid matching(s) or False"""
+def has_valid_matching(my_concepts, low_range, high_range):
+    """Returns a dictionary of all valid matching(s) or False"""
 
     color_ratings = helpers.data
     color_values = helpers.colorData
@@ -127,13 +127,13 @@ def display_matching(my_matching):
 
 
 # test values
-my_concepts = [0, 1, 2, 3]
+"""my_concepts = [0, 1, 2, 3]
 high_range = [0.55, 1]
 low_range = [0, 0.45]
-test_matching = has_valid_matching(my_concepts, high_range, low_range)[7]
+test_matching = has_valid_matching(my_concepts, low_range, high_range)[7]
 display_matching(test_matching)
 
 
 
 
-print('done')
+print('done')"""
