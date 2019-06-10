@@ -3,6 +3,7 @@ from skimage import color as clr
 import networkx as nx
 import matplotlib.pyplot as plt
 import itertools
+import numpy as np
 
 
 class Matching:
@@ -124,6 +125,7 @@ def display_matching(my_matching):
     nx.draw_networkx_edge_labels(G, pos=pos, edge_labels=labels, label_pos=0.8)
 
     plt.show()
+
 
 
 # test values
