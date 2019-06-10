@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import math
 
-def find_matchings(matching_size, low_maxes, high_mins, step):
+def find_all_matchings(matching_size, low_maxes, high_mins, step):
 
     all_concepts = range(len(helpers.allConcepts))
     concept_combos = list(itertools.combinations(all_concepts, matching_size))
@@ -94,7 +94,7 @@ def find_matchings(matching_size, low_maxes, high_mins, step):
     plt.show()"""
 
     # Min Difference
-    im = ax.imshow(min_diff_array)
+    """im = ax.imshow(min_diff_array)
 
     # Loop over data dimensions and create text annotations.
     for i in range(len(low_ranges)):
@@ -105,20 +105,20 @@ def find_matchings(matching_size, low_maxes, high_mins, step):
     ax.set_title("Min(Max Delta E - Min Delta E)")
 
     fig.tight_layout()
-    plt.show()
+    plt.show()"""
 
 
     # results_list.sort(key=lambda x: x.delta_es_diff())
 
     # matching_helpers.display_matching(results_list[0])
 
-    """strong_results = results_array[6][3]
+    strong_results = results_array[6][3]
     strong_results.sort(key=lambda x: x.delta_es_diff())
     for result in strong_results:
         print(result.delta_es_diff())
     matching_helpers.display_matching(strong_results[0])
 
-    return (results_array, results_list)"""
+    return (results_array, results_list)
 
 
-find_matchings(4, [0, 0.45], [0.55, 1], 0.05)
+find_all_matchings(4, [0, 0.45], [0.55, 1], 0.05)

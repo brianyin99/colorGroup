@@ -137,10 +137,37 @@ def display_matching(my_matching):
 
 # test values
 """my_concepts = [0, 1, 2, 3]
-high_range = [0.55, 1]
 low_range = [0, 0.45]
+high_range = [0.55, 1]
 test_matching = has_valid_matching(my_concepts, low_range, high_range)[7]
 display_matching(test_matching)"""
+
+
+def find_best_matching(matching_size, low_range, high_range):
+    """Find and display the best matching given size of matching and ranges, return LAB values"""
+
+    all_concepts = range(len(helpers.allConcepts))
+    concept_combos = list(itertools.combinations(all_concepts, matching_size))
+    my_matchings = []
+    for concept_combo in concept_combos:
+        combo_matchings = has_valid_matching(concept_combo, low_range, high_range)
+        if combo_matchings:
+            for combo_matching in combo_matchings:
+                my_matchings.append(combo_matching)
+    if my_matchings:
+        my_matchings.sort(key=lambda x: x.delta_es_diff())
+        best_matching = my_matchings[0]
+        display_matching(best_matching)
+        return best_matching.colors
+
+    else:
+        print("No matching")
+
+
+matching_size = 4
+low_range = [0, 0.3]
+high_range = [0.7, 1]
+print(find_best_matching(matching_size, low_range, high_range))
 
 
 
