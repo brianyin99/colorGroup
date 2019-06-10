@@ -40,7 +40,6 @@ def has_valid_matching(my_concepts, high_range, low_range):
 
     color_ratings = helpers.data
     color_values = helpers.colorData
-    colors_remaining = color_values.copy()
     final_pairings = {} # (concept, [LAB value(s)])
 
     # for each color, discard color unless highly associated with exactly one concept and weakly associated with the rest
@@ -68,7 +67,6 @@ def has_valid_matching(my_concepts, high_range, low_range):
                     final_pairings[high_concept].append(my_color)
                 else:
                     final_pairings[high_concept] = [my_color]
-                # print(helpers.allConcepts[high_concept])
 
     # if some concept does not have a color, return False
     if False in [concept in final_pairings for concept in my_concepts]:
@@ -90,20 +88,25 @@ def display_matching(my_matching):
     """Display the graph representation of a Matching instance"""
     G = my_matching.my_graph
 
+    # set positions of nodes (concepts along the top, colors along the bottom)
     pos = {}
     pos.update((node, (my_matching.concepts.index(node), 2)) for node in my_matching.concepts)
     pos.update((node, (my_matching.colors.index(node), 1)) for node in my_matching.colors)
     weights = [G[u][v]['weight'] for u,v in G.edges]
+
+    # labels for nodes
     labels = {}
     for node in my_matching.concepts:
         labels[node] = helpers.allConcepts[node]
     for node in my_matching.colors:
         labels[node] = helpers.colorData[node]
 
+    # positions of labels
     pos_higher = {}
     pos_higher.update((node, (my_matching.concepts.index(node), 2.05)) for node in my_matching.concepts)
     pos_higher.update((node, (my_matching.colors.index(node), 0.95)) for node in my_matching.colors)
 
+    # use RGB color to display color nodes
     values = [clr.lab2rgb([[helpers.colorData[node]]])[0][0].tolist() for node in my_matching.colors]
 
     nx.draw(G, pos=pos, width=weights)
@@ -111,6 +114,7 @@ def display_matching(my_matching):
     nx.draw_networkx_nodes(G, pos=pos, nodelist=my_matching.concepts, node_color='w', edgecolors='k', node_size=400)
     nx.draw_networkx_nodes(G, pos=pos, nodelist=my_matching.colors, node_color=values, node_shape='s', node_size=500)
 
+    # display weight along edges
     # https://stackoverflow.com/questions/28957286/how-to-remove-an-attribute-from-the-edge-label-in-a-networkx-graph
     labels = {}
     for u, v, data in G.edges(data=True):
@@ -122,7 +126,7 @@ def display_matching(my_matching):
     plt.show()
 
 
-
+# test values
 my_concepts = [0, 1, 2, 3]
 high_range = [0.55, 1]
 low_range = [0, 0.45]
