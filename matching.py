@@ -81,7 +81,7 @@ def find_matchings(matching_size, low_maxes, high_mins, step):
     # Loop over data dimensions and create text annotations.
     for i in range(len(low_ranges)):
         for j in range(len(high_ranges)):
-            text = ax.text(j, i, str.format('{0:.2f}',diff_array[i][j]),
+            text = ax.text(j, i, str.format('{0:.2f}', diff_array[i][j]),
                            ha="center", va="center", color="w")
 
     ax.set_title("Average (Max Delta E - Min Delta E) per Matching")
@@ -92,9 +92,9 @@ def find_matchings(matching_size, low_maxes, high_mins, step):
 
     results_list.sort(key=lambda x: x.delta_es_diff())
 
-    # matching_helpers.display_matching(results_list[0])
+    matching_helpers.display_matching(results_list[0])
 
     return (results_array, results_list)
 
 
-find_matchings(4, [0.35, 0.45], [0.55, 0.90], 0.05)
+find_matchings(4, [0, 0.45], [0.55, 1], 0.05)

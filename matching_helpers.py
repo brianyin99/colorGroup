@@ -87,6 +87,13 @@ def has_valid_matching(my_concepts, low_range, high_range):
 
 def display_matching(my_matching):
     """Display the graph representation of a Matching instance"""
+
+    plt.title("Max Delta E - Min Delta E: " + str.format('{0:.2f}', my_matching.delta_es_diff()) + ", "
+              + "Low Range: " + "[" + str.format('{0:.2f}', my_matching.low_range[0])
+              + ", " + str.format('{0:.2f}', my_matching.low_range[1]) + "], "
+              + "High Range: " + "[" + str.format('{0:.2f}', my_matching.high_range[0])
+              + ", " + str.format('{0:.2f}', my_matching.high_range[1]) + "]")
+
     G = my_matching.my_graph
 
     # set positions of nodes (concepts along the top, colors along the bottom)
@@ -99,8 +106,8 @@ def display_matching(my_matching):
     labels = {}
     for node in my_matching.concepts:
         labels[node] = helpers.allConcepts[node]
-    for node in my_matching.colors:
-        labels[node] = helpers.colorData[node]
+    """for node in my_matching.colors:
+        labels[node] = helpers.colorData[node]"""
 
     # positions of labels
     pos_higher = {}
@@ -123,7 +130,7 @@ def display_matching(my_matching):
 
 
     nx.draw_networkx_edge_labels(G, pos=pos, edge_labels=labels, label_pos=0.8)
-
+    plt.tight_layout()
     plt.show()
 
 
@@ -133,9 +140,9 @@ def display_matching(my_matching):
 high_range = [0.55, 1]
 low_range = [0, 0.45]
 test_matching = has_valid_matching(my_concepts, low_range, high_range)[7]
-display_matching(test_matching)
+display_matching(test_matching)"""
 
 
 
 
-print('done')"""
+print('done')
