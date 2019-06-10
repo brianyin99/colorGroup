@@ -17,6 +17,7 @@ def find_matchings(matching_size, low_maxes, high_mins, step):
 
     count_array = [[0 for _ in range(array_width)] for _ in range(array_height)]
     diff_array = [[[] for _ in range(array_width)] for _ in range(array_height)]
+    min_diff_array = [[0 for _ in range(array_width)] for _ in range(array_height)]
 
     for i in range(array_height):
         for j in range(array_width):
@@ -36,26 +37,36 @@ def find_matchings(matching_size, low_maxes, high_mins, step):
     for i in range(array_height):
         for j in range(array_width):
             if diff_array[i][j]:
+                min_diff_array[i][j] = min(diff_array[i][j])
+            else:
+                min_diff_array[i][j] = math.inf
+
+    for i in range(array_height):
+        for j in range(array_width):
+            if diff_array[i][j]:
                 diff_array[i][j] = sum(diff_array[i][j]) / len(diff_array[i][j])
             else:
                 diff_array[i][j] = math.inf
 
     # https://matplotlib.org/3.1.0/gallery/images_contours_and_fields/image_annotated_heatmap.html
     # Tweak + step if getting display errors
-    """low_ranges = ["[" + str(low_maxes[0]) + ", " + str.format('{0:.2f}', i) + "]"
+    low_ranges = ["[" + str(low_maxes[0]) + ", " + str.format('{0:.2f}', i) + "]"
                   for i in np.arange(low_maxes[0], low_maxes[1] + step, step)]
     high_ranges = ["[" + str.format('{0:.2f}', i) + ", " + str(high_mins[1]) + "]"
                    for i in np.arange(high_mins[0], high_mins[1] + step, step)]
 
     fig, ax = plt.subplots()
-    im = ax.imshow(count_array)
-
     # show all ticks
     ax.set_yticks(np.arange(len(low_ranges)))
     ax.set_xticks(np.arange(len(high_ranges)))
     # label ticks
     ax.set_yticklabels(low_ranges)
     ax.set_xticklabels(high_ranges)
+    plt.xlabel("'Strong' Association Range")
+    plt.ylabel("'Weak' Association Range")
+
+    # Number of Valid Matchings
+    """im = ax.imshow(count_array)
 
     # Loop over data dimensions and create text annotations.
     for i in range(len(low_ranges)):
@@ -68,15 +79,8 @@ def find_matchings(matching_size, low_maxes, high_mins, step):
     fig.tight_layout()
     plt.show()"""
 
-    """fig, ax = plt.subplots()
-    im = ax.imshow(diff_array)
-
-    # show all ticks
-    ax.set_yticks(np.arange(len(low_ranges)))
-    ax.set_xticks(np.arange(len(high_ranges)))
-    # label ticks
-    ax.set_yticklabels(low_ranges)
-    ax.set_xticklabels(high_ranges)
+    # Average Difference
+    """im = ax.imshow(diff_array)
 
     # Loop over data dimensions and create text annotations.
     for i in range(len(low_ranges)):
@@ -89,12 +93,32 @@ def find_matchings(matching_size, low_maxes, high_mins, step):
     fig.tight_layout()
     plt.show()"""
 
+    # Min Difference
+    im = ax.imshow(min_diff_array)
 
-    results_list.sort(key=lambda x: x.delta_es_diff())
+    # Loop over data dimensions and create text annotations.
+    for i in range(len(low_ranges)):
+        for j in range(len(high_ranges)):
+            text = ax.text(j, i, str.format('{0:.2f}', min_diff_array[i][j]),
+                           ha="center", va="center", color="w")
 
-    matching_helpers.display_matching(results_list[0])
+    ax.set_title("Min(Max Delta E - Min Delta E)")
 
-    return (results_array, results_list)
+    fig.tight_layout()
+    plt.show()
+
+
+    # results_list.sort(key=lambda x: x.delta_es_diff())
+
+    # matching_helpers.display_matching(results_list[0])
+
+    """strong_results = results_array[6][3]
+    strong_results.sort(key=lambda x: x.delta_es_diff())
+    for result in strong_results:
+        print(result.delta_es_diff())
+    matching_helpers.display_matching(strong_results[0])
+
+    return (results_array, results_list)"""
 
 
 find_matchings(4, [0, 0.45], [0.55, 1], 0.05)
